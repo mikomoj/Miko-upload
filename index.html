@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Demo</title>
+    <style>
+        body { background-color: #ffe6f0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .upload-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(255, 182, 193, 0.5); text-align: center; width: 450px; border: 2px dashed #ffb6c1; }
+        .icon { font-size: 40px; color: #ff4d94; }
+        h2 { margin: 10px 0 5px; font-size: 20px; }
+        p { font-size: 13px; color: #888; margin-bottom: 20px; }
+        .file-input-label { background-color: #ff4d94; color: white; padding: 10px 25px; border-radius: 20px; cursor: pointer; display: inline-block; font-weight: bold; }
+        input[type="file"] { display: none; }
+        .file-list { margin: 20px 0; padding: 10px; background: #fff0f5; border-radius: 10px; font-size: 13px; display: none; text-align: left; max-height: 100px; overflow-y: auto; }
+        .btn-upload { background-color: #ff4d94; color: white; border: none; padding: 12px 30px; border-radius: 20px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-upload:disabled { background-color: #ffb6c1; cursor: not-allowed; }
+        .status-msg { margin-top: 15px; font-size: 13px; color: #ff4d94; font-weight: 500; }
+        .footer { margin-top: 25px; font-size: 11px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="upload-container">
+    <div class="icon">↑</div>
+    <h2>Drop your files here ♡</h2>
+    <p>Images, documents, music, ZIP files and more</p>
+
+    <label for="file-chooser" class="file-input-label">♡ Choose Files</label>
+    <input type="file" id="file-chooser" multiple>
+
+    <div class="file-list" id="file-list"></div>
+
+    <button class="btn-upload" id="upload-btn" disabled>Upload selected files</button>
+    <div class="status-msg" id="status-msg">♡ Files stay secure in this demo ♡</div>
+    <div class="footer">Made with ♥ and a little sparkle</div>
+</div>
+
+<script>
+    const fileChooser = document.getElementById('file-chooser');
+    const fileList = document.getElementById('file-list');
+    const uploadBtn = document.getElementById('upload-btn');
+    const statusMsg = document.getElementById('status-msg');
+    let selectedFiles = [];
+
+    // 1. जब यूज़र फाइल चुनकर 'Open' करेगा
+    fileChooser.addEventListener('change', (e) => {
+        selectedFiles = Array.from(e.target.files);
+        if (selectedFiles.length > 0) {
+            fileList.innerHTML = `<strong>Selected Files:</strong><br>` + 
+                selectedFiles.map(f => `📄 ${f.name} (${(f.size/1024).toFixed(1)} KB)`).join('<br>');
+            fileList.style.display = 'block';
+            uploadBtn.disabled = false; 
+            statusMsg.innerText = "Files ready to upload! ✨";
+        }
+    });
+
+    // 2. जब यूज़र 'Upload' बटन दबाएगा
+    uploadBtn.addEventListener('click', () => {
+        if (selectedFiles.length === 0) return;
+
+        statusMsg.innerText = "Uploading... Please wait... ⏳";
+        uploadBtn.disabled = true;
+
+        // टेस्टिंग के लिए फ्री अपलोड API (यह आपकी फाइल को टेम्परेरी सर्वर पर भेज देगा)
+        const formData = new FormData();
+        selectedFiles.forEach(file => formData.append('files[]', file));
+
+        fetch('https://httpbin.org', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if(response.ok) {
+                statusMsg.innerText = "All files uploaded successfully! 🎉";
+                fileList.innerHTML = "";
+                fileList.style.display = 'none';
+                selectedFiles = [];
+            } else {
+                throw new Error();
+            }
+        })
+        .catch(() => {
+            statusMsg.innerText = "Something went wrong. Try again. ❌";
+            uploadBtn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
